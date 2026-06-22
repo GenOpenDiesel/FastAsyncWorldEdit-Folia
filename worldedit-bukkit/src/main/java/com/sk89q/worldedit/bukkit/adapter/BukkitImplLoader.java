@@ -167,6 +167,8 @@ public class BukkitImplLoader {
     public BukkitImplAdapter loadAdapter() throws AdapterLoadException {
         // FAWE - do not initialize classes on lookup
         final ClassLoader classLoader = this.getClass().getClassLoader();
+        // FAWE start - remember why each candidate failed so we can surface it if none load
+        final List<Throwable> candidateErrors = new ArrayList<>();
         for (String className : adapterCandidates) {
             try {
                 Class<?> cls = Class.forName(className, false, classLoader);
@@ -183,11 +185,19 @@ public class BukkitImplLoader {
                 LOGGER.warn("Failed to load the Bukkit adapter class '" + className
                         + "' that is not supposed to be raising this error", e);
             } catch (Throwable e) {
+                candidateErrors.add(e);
                 if (className.equals(customCandidate)) {
                     LOGGER.warn("Failed to load the Bukkit adapter class '" + className + "'", e);
                 }
             }
         }
+
+        // No adapter matched the running server - log why each candidate was rejected so the
+        // real cause is visible instead of being silently swallowed.
+        for (Throwable candidateError : candidateErrors) {
+            LOGGER.warn("A Bukkit adapter candidate could not be loaded for this server version", candidateError);
+        }
+        // FAWE end
 
         throw new AdapterLoadException(LOAD_ERROR_MESSAGE);
     }
