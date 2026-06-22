@@ -27,9 +27,18 @@ jobs:
       - name: Build plugin
         run: ./gradlew build --no-daemon --stacktrace
 
-      - name: Upload plugin jar
+      # Paper/Folia run with Mojang mappings -> use the "-Paper-" jar on Folia.
+      - name: Upload Folia/Paper jar (Mojang-mapped, USE THIS ON FOLIA)
         uses: actions/upload-artifact@v4
         with:
-          name: FastAsyncWorldEdit-Folia
-          path: worldedit-bukkit/build/libs/FastAsyncWorldEdit-*.jar
+          name: FastAsyncWorldEdit-Paper-Folia
+          path: worldedit-bukkit/build/libs/FastAsyncWorldEdit-Paper-*.jar
+          if-no-files-found: error
+
+      # Spigot/CraftBukkit only - will NOT load on a Mojang-mapped Folia server.
+      - name: Upload Spigot jar (reobf, NOT for Folia)
+        uses: actions/upload-artifact@v4
+        with:
+          name: FastAsyncWorldEdit-Spigot
+          path: worldedit-bukkit/build/libs/FastAsyncWorldEdit-Bukkit-*.jar
           if-no-files-found: error
